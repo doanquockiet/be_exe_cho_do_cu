@@ -5,19 +5,38 @@ const { authenticate } = require('../middleware/authMiddleware');
 
 const router = express.Router();
 
-// Add Product - Protected Route
+// Add new product endpoint
 router.post('/', authenticate, async (req, res) => {
-    const { name, image, rating, comments, quantity, size } = req.body;
+    const { name, image, price, rating, quantity, size, category, description } = req.body;
 
-    const product = new Product({ name, image, rating, comments, quantity, size });
+    // Validate required fields
+    if (!name || !image || !price || !rating || !quantity || !size || !category || !description) {
+        return res.status(400).json({
+            message: 'Please provide all required fields: name, image, price, rating, quantity, size, category, and description.'
+        });
+    }
+
+    const product = new Product({
+        name,
+        image,
+        price,
+        rating,
+        quantity,
+        size,
+        category,
+        description
+    });
 
     try {
-        await product.save();
-        res.status(201).json(product);
+        // Save the product to the database
+        const savedProduct = await product.save();
+        res.status(201).json({ message: 'Product added successfully!', product: savedProduct });
     } catch (error) {
+        // Handle validation or database errors
         res.status(400).json({ message: error.message });
     }
 });
+
 // Sửa sản phẩm
 router.put('/:id', authenticate, async (req, res) => {
     try {
@@ -44,4 +63,15 @@ router.get('/', async (req, res) => {
     res.json(products);
 });
 
+router.get('/:id', async (req, res) => {
+    try {
+        const product = await Product.findById(req.params.id);
+        if (!product) {
+            return res.status(404).json({ message: 'Product not found' });
+        }
+        res.json(product);
+    } catch (error) {
+        res.status(400).json({ message: error.message });
+    }
+});
 module.exports = router;
