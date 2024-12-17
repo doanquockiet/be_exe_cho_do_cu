@@ -1,10 +1,11 @@
 // src/config/server.js
-import express from 'express';
-import dotenv from 'dotenv';
-import cors from 'cors';
-import productRoutes from '../routes/productRoutes.js'
-import connectionDB from './connectionDB.js'; // Đường dẫn đến connectionDB
-import userRoutes from '../routes/userRoutes.js';
+const express = require('express');
+const dotenv = require('dotenv');
+const cors = require('cors')
+
+const productRoutes = require("../routes/productRoutes.js") 
+const connectionDB = require ("./connectionDB.js" ) // Đường dẫn đến connectionDB
+const userRoutes = require("../routes/userRoutes.js")
 dotenv.config();
 const app = express();
 
