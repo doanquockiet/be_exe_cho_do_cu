@@ -1,7 +1,9 @@
-import 'dotenv/config';
 
-import mongoose from "mongoose";
+require('dotenv/config');  // Thay thế import bằng require
 
+const mongoose = require("mongoose")
+
+ const { config} = require ('dotenv')
 const connectionDB = async () => {
     try {
         if (process.env.MONGO_URI) {
@@ -15,4 +17,4 @@ const connectionDB = async () => {
     }
 }
 
-export default connectionDB;
+module.exports = connectionDB;
