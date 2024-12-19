@@ -7,18 +7,18 @@ const router = express.Router();
 
 // Add new product endpoint
 router.post('/', authenticate, async (req, res) => {
-    const { name, image, price, rating, quantity, size, category, description } = req.body;
+    const { name, images, price, rating, quantity, size, category, description } = req.body;
 
     // Validate required fields
-    if (!name || !image || !price || !rating || !quantity || !size || !category || !description) {
+    if (!name || !images || images.length === 0 || !price || !rating || !quantity || !size || !category || !description) {
         return res.status(400).json({
-            message: 'Please provide all required fields: name, image, price, rating, quantity, size, category, and description.'
+            message: 'Please provide all required fields: name, images, price, rating, quantity, size, category, and description.'
         });
     }
 
     const product = new Product({
         name,
-        image,
+        images, // Danh sách URL hình ảnh
         price,
         rating,
         quantity,
@@ -36,6 +36,7 @@ router.post('/', authenticate, async (req, res) => {
         res.status(400).json({ message: error.message });
     }
 });
+
 
 // Sửa sản phẩm
 router.put('/:id', authenticate, async (req, res) => {
@@ -59,9 +60,21 @@ router.delete('/:id', authenticate, async (req, res) => {
 
 // Lấy tất cả sản phẩm
 router.get('/', async (req, res) => {
-    const products = await Product.find();
-    res.json(products);
+    try {
+        const products = await Product.find();
+
+        // Lấy ra chỉ một ảnh đầu tiên từ mảng `images`
+        const productsWithSingleImage = products.map(product => ({
+            ...product.toObject(),
+            images: product.images.length > 0 ? [product.images[0]] : [], // Chỉ giữ ảnh đầu tiên
+        }));
+
+        res.json(productsWithSingleImage);
+    } catch (error) {
+        res.status(500).json({ message: 'Error fetching products', error: error.message });
+    }
 });
+
 
 router.get('/:id', async (req, res) => {
     try {
