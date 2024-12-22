@@ -2,6 +2,7 @@ const express = require('express');
 const User = require('../models/User');
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
+const { authenticate } = require('../middleware/authMiddleware');
 
 const router = express.Router();
 
@@ -45,21 +46,47 @@ router.post('/login', async (req, res) => {
     const { email, password } = req.body;
 
     try {
-        // Ensure email is in lowercase to avoid case-sensitivity issues
+        // Đảm bảo email là chữ thường
         const emailLowerCase = email.toLowerCase();
 
-        // Find the user by email
+        // Tìm người dùng qua email
         const user = await User.findOne({ email: emailLowerCase });
         if (!user) return res.status(400).json({ message: "Invalid credentials" });
 
-        // Compare the provided password with the stored hashed password
+        // So sánh mật khẩu
         const isMatch = await bcrypt.compare(password, user.password);
         if (!isMatch) return res.status(400).json({ message: "Invalid credentials" });
 
-        // Generate a JWT token
-        const token = jwt.sign({ id: user._id }, process.env.JWT_SECRET, { expiresIn: '1h' });
+        // Tạo token với thông tin role
+        const token = jwt.sign(
+            { id: user._id, role: user.role },
+            process.env.JWT_SECRET,
+            { expiresIn: '1h' }
+        );
 
-        res.json({ token, message: "Login successful" });
+        res.json({
+            token,
+            role: user.role,
+            message: "Login successful"
+        });
+    } catch (error) {
+        res.status(500).json({ message: error.message });
+    }
+});
+
+router.get('/profile', authenticate, async (req, res) => {
+    try {
+        // Lấy thông tin người dùng từ ID trong token
+        const user = await User.findById(req.user.id).select('-password'); // Loại bỏ trường password khỏi kết quả
+
+        if (!user) {
+            return res.status(404).json({ message: 'User not found' });
+        }
+
+        res.json({
+            user,
+            message: "Account information retrieved successfully"
+        });
     } catch (error) {
         res.status(500).json({ message: error.message });
     }
