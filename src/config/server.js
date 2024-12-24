@@ -6,6 +6,7 @@ const cors = require('cors')
 const productRoutes = require("../routes/productRoutes.js") 
 const connectionDB = require ("./connectionDB.js" ) // Đường dẫn đến connectionDB
 const userRoutes = require("../routes/userRoutes.js")
+const cartRoutes = require("../routes/cartRoutes.js")
 dotenv.config();
 const app = express();
 
@@ -19,6 +20,7 @@ app.use(express.json());
 app.use('/api/products', productRoutes);
 
 app.use('/api/users', userRoutes);
+app.use('/api/cart', cartRoutes)
 // Khởi động server
 const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => {
