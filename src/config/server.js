@@ -14,7 +14,7 @@ const app = express();
 
 // Kết nối MongoDB
 connectionDB();
-app.use(cors());
+app.use(cors({ origin: '*' }));
 // Middleware để parse JSON
 app.use(express.json());
 
